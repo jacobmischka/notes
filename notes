@@ -2,7 +2,7 @@
 
 configured_dir=${NOTES_DIRECTORY%/} # Remove trailing slashes
 notes_dir="${configured_dir:-$HOME/notes}"
-escaped_notes_dir=$(printf $notes_dir | sed -e 's/[]\/$*.^|[]/\\&/g')
+escaped_notes_dir="$(printf "$notes_dir" | sed -e 's/[]\/$*.^|[]/\\&/g')"
 
 if [ "$NOTES_EDITOR" ]; then
     # Allow user to specify separate editor specifically for notes
@@ -13,7 +13,7 @@ elif [ -z "$EDITOR" ] && type editor &>/dev/null; then
 fi
 
 without_notes_dir() {
-    cat | sed -e s/^$escaped_notes_dir//g | sed -E "s/^\/+//g"
+    cat | sed -e "s/^$escaped_notes_dir//g" | sed -E "s/^\/+//g"
 }
 
 ls_notes() {
@@ -61,8 +61,24 @@ grep_notes() {
 
 new_note() {
     note_name="$*"
-    mkdir -p $(dirname "$notes_dir/$note_name")
+    mkdir -p "$(dirname "$notes_dir/$note_name")"
     open_note "$note_name.md"
+}
+
+remove_note() {
+    local rm_args=()
+    if [[ "$1" == "-r" || "$1" == "--recursive" ]]; then
+        rm_args+=("--recursive")
+        shift
+    fi
+
+    local note_name="$*"
+    local to_remove="$notes_dir/$note_name"
+
+    if [ -f "$notes_dir/$note_name.md" ]; then
+        to_remove="$notes_dir/$note_name.md"
+    fi
+    rm "${rm_args[@]}" "$to_remove"
 }
 
 open_something() {
@@ -106,6 +122,7 @@ Usage:
     notes grep|g <pattern>                # Search notes by content
     notes open|o                          # Open your notes directory
     notes open|o <name>                   # Open a note for editing by full name
+    notes rm [-r | --recursive] <name>    # Remove note, or folder if -r or --recursive is given
     echo <name> | notes open|o            # Open all note filenames piped in
     notes --help                          # Print this usage information
 
@@ -142,6 +159,9 @@ main() {
         "open"|"o" )
             cmd="open_something"
             ;;
+        "rm" )
+            cmd="remove_note"
+            ;;
         --help | -help | -h )
             cmd="usage"
             ;;
@@ -153,7 +173,7 @@ main() {
     esac
     shift
 
-    $cmd $@
+    $cmd "$@"
     ret=$[$ret+$?]
     exit $ret
 }

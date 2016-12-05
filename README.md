@@ -55,6 +55,10 @@ Opens your notes folder in your default configured file explorer. Shorthand alia
 
 Opens a given note in your `$EDITOR` (`$NOTES_EDITOR` instead if it exists). Name can be an absolute path, or a relative path in your notes (.md suffix optional). Shorthand alias also available with `notes o`.
 
+### `notes rm [-r | --recursive] <note-name>`
+
+Remove the given note if it exists. If `-r` or `--recursive` is given, delete the folders/notes recursively.
+
 ### `notes grep/find <pattern> | notes open`
 
 Combine these together! This opens each matching note in your `$EDITOR` in turn.
